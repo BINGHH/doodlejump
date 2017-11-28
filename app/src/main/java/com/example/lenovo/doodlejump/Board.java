@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -16,9 +18,10 @@ import static android.content.ContentValues.TAG;
  */
 
 public class Board extends View{
-    private Doodle doodle = null;
-    private Canvas DDCanvas;
+    private int screenWidth, screenHeight;
     private Paint paint;
+    private Doodle doodle = null;
+    //private Platform platform [] = new Platform[25];
 
     public Board(Context context) {
         super(context);
@@ -35,24 +38,23 @@ public class Board extends View{
         options.inSampleSize = 2;
         Bitmap src;
         try {
+            screenWidth = getWidth();
+            screenHeight = getHeight();
             src =  BitmapFactory.decodeResource(getResources(), R.drawable.doodle, options);
-            doodle = new Doodle(getWidth(), getHeight(), src);
-            //DDBitmap = Bitmap.createScaledBitmap(src, 138, 135, false);
-            //TestBitmap = Bitmap.createScaledBitmap(src, 138, 135, false);
-            //Log.e(TAG, "DD width = " + DDBitmap.getWidth() + " DD height = " + DDBitmap.getHeight());
-            DDCanvas = new Canvas(doodle.getBitmap());
+            doodle = new Doodle(screenWidth, screenHeight, src);
         } catch (Exception e) {
-            Log.e(TAG, "something went wrong with InitBitmap.");
+            Log.e(TAG, "something went wrong when doodle is initialed.");
         }
+
     }
+
 
     @Override
     protected void onDraw(Canvas canvas) {
         if (doodle == null) InitBitmap();
         try {
-            canvas.drawBitmap(doodle.getBitmap(), doodle.getX(), doodle.getY(), paint);
+            canvas.drawBitmap(doodle.getBitmap(), doodle.x, doodle.y, paint);
             doodle.refresh();
-            //canvas.drawBitmap(TestBitmap, 258, 345, paint);
         } catch (Exception e) {
             Log.e(TAG, "canvas.drawBitmap failed.");
         }

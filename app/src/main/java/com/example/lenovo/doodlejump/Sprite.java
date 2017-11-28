@@ -8,9 +8,10 @@ public class Sprite {
     protected Bitmap bitmap;
     protected int screenWidth, screenHeight;    //屏幕长宽
     protected int width, height;    //单位: px  该精灵的长宽.
-    protected int x, y;             //单位: px
-    protected double vx, vy;        //单位: px/ms
-    protected double g;             //重力加速度, 单位px/ms²
+    public int x, y;                //单位: px
+    public double vx, vy;           //单位: px/ms
+    protected double g;             //重力加速度, 向下为正, 单位px/ms²
+    protected double a;             //横向加速度, 向右为正, 单位px/ms²
 
     protected boolean setBitmap(Bitmap src) {
         //使用src与指定的长宽设置bitmap, 如果成功则返回true, 否则返回false.
@@ -26,14 +27,6 @@ public class Sprite {
 
     public Bitmap getBitmap() {
         return bitmap;
-    }
-
-    public int getX(){
-        return x;
-    }
-
-    public int getY(){
-        return y;
     }
 
     public int getWidth(){
