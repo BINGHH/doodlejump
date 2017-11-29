@@ -1,6 +1,7 @@
 package com.example.lenovo.doodlejump;
 
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
 
@@ -11,7 +12,7 @@ import static android.content.ContentValues.TAG;
  */
 
 public class Doodle extends Sprite{
-    public Doodle(int screenWidth, int screenHeight, Bitmap src){
+    public Doodle(int screenWidth, int screenHeight, Context context){
         interval = 16;
         //根据计算, 每次普通跳跃花费500ms的时间到达最高点, 跳跃高度为600像素.
         //因此重力加速度g = 0.0048 px/ms² 初始速度为-2.4 px/ms
@@ -25,7 +26,7 @@ public class Doodle extends Sprite{
         vy = -2.4;
         g = 0.0048;
         a = -0.0048;
-        if (!setBitmap(src)) Log.e(TAG, "Unable to set doodle.bitmap.");
+        if (!setBitmap(context, R.drawable.doodle)) Log.e(TAG, "Unable to set doodle.bitmap.");
     }
 
     public void refresh(){
@@ -37,13 +38,9 @@ public class Doodle extends Sprite{
 
         y = y + (int)(vy * interval);
         vy = vy + g * interval;
-        //Log.e(TAG, "y = " + y + "vy = " + vy + "screenH - height = " + (screenHeight - height));
         if(y > screenHeight - height) {
             y = screenHeight - height;
             vy = -2.4;
         }
     }
-
-
-
 }
