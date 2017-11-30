@@ -3,13 +3,11 @@ package com.example.lenovo.doodlejump;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.util.AttributeSet;
 import android.util.Log;
-import android.view.View;
+
+import static android.content.ContentValues.TAG;
 
 
 public class Sprite {
@@ -19,11 +17,20 @@ public class Sprite {
     protected int width, height;    //单位: px  该精灵的长宽.
     public int x, y;                //单位: px
     public double vx, vy;           //单位: px/ms
+    public double additionVy;       //除自己本身外的附加速度
     protected double g;             //重力加速度, 向下为正, 单位px/ms²
     protected double a;             //横向加速度, 向右为正, 单位px/ms²
 
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+
+    public int getWidth() { return width; }
+
+    public int getHeight(){ return height; }
+
     public boolean setBitmap(Context context, int src) {
-        //使用src与指定的长宽设置bitmap, 如果成功则返回true, 否则返回false.
+        //src为指定的图像, 示例取值为R.drawable.doodle, 如果成功则返回true, 否则返回false.
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inMutable = true;
         options.inSampleSize = 2;
@@ -38,17 +45,11 @@ public class Sprite {
         else return true;
     }
 
-    public Bitmap getBitmap() {
-        return bitmap;
+    public void drawBitmap(Canvas canvas, Paint paint) {
+        try {
+            canvas.drawBitmap(bitmap, x, y, paint);
+        } catch (Exception e) {
+            Log.e(TAG, "sprite.drawBitmap() failed.");
+        }
     }
-
-    public int getWidth(){
-        return width;
-    }
-
-    public int getHeight(){
-        return height;
-    }
-
-
 }

@@ -10,54 +10,41 @@ import static android.content.ContentValues.TAG;
  */
 
 public class Platform extends Sprite {
-    protected boolean validate;
     protected int type;
     public Platform(int screenWidth, int screenHeight, int x, int y, Context context){
         interval = 16;
-        validate = true;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
         this.x = x;
         this.y = y;
+        additionVy = 0;
         g = 0;      a = 0;
         width = 185;
         height = 55;
     }
 
     public boolean refresh(){
-        //如果platform掉出了屏幕外, 就返回true, 通知调用者进行处理
-        //否则不必进行处理
-        y = y + (int)(vy * interval);
-        vy = vy + g * interval;
-        if(y > screenHeight ) return true;
-        else return false;
+        //如果platform掉出了屏幕外, 就返回false, 通知调用者进行处理
+        //否则返回true, 表示不必进行处理
+        double sumVy = vy + additionVy;
+        y = y + (int)(sumVy * interval);
+        if(y > screenHeight ) return false;
+
+        x = x + (int)(vx * interval);
+
+        return true;
     }
 
-    public boolean isValidate() {
-        //true代表有效, false代表无效
-        return validate;
+    public void impactCheck(Doodle doodle) {
+        //检测doodle是否碰撞到platform
+        //若发生碰撞则返回true, 否则返回false
+        if(doodle.y + doodle.height < this.y + this.height
+                && doodle.y + doodle.height > this.y
+                && doodle.x + doodle.width > this.x
+                && doodle.x < this.x + this.width )
+            doodle.vy = -2.4;
     }
 
-    public void recycle() {
-        //暂时用不上了, 销毁以释放空间
-        if (bitmap != null && !bitmap.isRecycled()){
-            bitmap.recycle();
-            bitmap = null;
-        }
-        validate = false;
-    }
-
-    public void reuse(int screenWidth, int screenHeight, int x, int y, Context context) {
-        interval = 16;
-        validate = true;
-        this.screenWidth = screenWidth;
-        this.screenHeight = screenHeight;
-        this.x = x;
-        this.y = y;
-        g = 0;      a = 0;
-        width = 185;
-        height = 55;
-    }
 }
 
 class normalPlat extends Platform {
@@ -67,17 +54,5 @@ class normalPlat extends Platform {
         type = PlatType.normal;
         if (!setBitmap(context, R.drawable.normalplat)) Log.e(TAG, "Unable to set Platform.bitmap.");
     }
-
-    @Override
-    public void reuse(int screenWidth, int screenHeight, int x, int y, Context context) {
-        super.reuse(screenWidth, screenHeight, x, y, context);
-        vx = 0;     vy = 0;
-        type = PlatType.normal;
-        if (!setBitmap(context, R.drawable.normalplat)) Log.e(TAG, "Unable to set Platform.bitmap.");
-    }
-
-
-
-
 }
 
