@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">doodlejump</string>
+    <string name="bgimg">bgimg</string>
 </resources>

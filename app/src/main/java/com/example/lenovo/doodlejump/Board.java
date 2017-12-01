@@ -2,6 +2,7 @@ package com.example.lenovo.doodlejump;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
@@ -16,6 +17,7 @@ public class Board extends View{
     private Paint paint;
     private Doodle doodle = null;
     private Platforms platforms = null;
+    private Title title = null;
 
     public Board(Context context) { super(context ); }
 
@@ -23,6 +25,9 @@ public class Board extends View{
         super(context, attrs);
         gameStart = false;
         paint = new Paint();
+        paint.setColor(Color.BLACK);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setTextSize(50);
     }
 
     private void InitBitmap() {
@@ -30,6 +35,7 @@ public class Board extends View{
         screenHeight = getHeight();
         doodle = new Doodle(screenWidth, screenHeight, getContext());
         platforms = new Platforms(screenWidth, screenHeight, 10, getContext());
+        title = new Title(screenWidth, screenHeight, getContext());
     }
 
     @Override
@@ -38,11 +44,17 @@ public class Board extends View{
             InitBitmap();
             gameStart = true;
         }
-        platforms.drawBitmap(canvas, paint);
-        platforms.refresh(getContext());
-        doodle.drawBitmap(canvas, paint);
-        doodle.refresh();
-        platforms.inform(doodle.isStill(), doodle.vy);
-        platforms.impactCheck(doodle);
+        platforms.drawBitmap(canvas, paint);        //画出所有的platform
+        platforms.refresh(getContext(), title);     //更新所有platform的坐标并更新分数
+        doodle.drawBitmap(canvas, paint);           //画出doodle
+        doodle.refresh();                           //更新doodle坐标
+        title.drawBitmap(canvas, paint);            //画出标题栏以及标题栏左侧分数
+        platforms.inform(doodle.isStill(), doodle.vy);  //告知platforms是否需要向下移动
+        platforms.impactCheck(doodle);              //碰撞检测
     }
+
+    public void setDoodleVx(double roll){
+        doodle.setVx(roll);
+    }
+
 }

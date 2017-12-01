@@ -11,15 +11,15 @@ import static android.content.ContentValues.TAG;
 
 
 public class Sprite {
-    protected int interval;         //最小时间间隔 单位: ms
+    protected int interval = 16;         //最小时间间隔 单位: ms
     protected Bitmap bitmap;
     protected int screenWidth, screenHeight;    //屏幕长宽
     protected int width, height;    //单位: px  该精灵的长宽.
-    public int x, y;                //单位: px
-    public double vx, vy;           //单位: px/ms
-    public double additionVy;       //除自己本身外的附加速度
+    protected int x, y;                //单位: px
+    protected double vx, vy;           //单位: px/ms
+    protected double additionVy;       //除自己本身外的附加速度
     protected double g;             //重力加速度, 向下为正, 单位px/ms²
-    protected double a;             //横向加速度, 向右为正, 单位px/ms²
+    //protected double a;             //横向加速度, 向右为正, 单位px/ms²
 
     public Bitmap getBitmap() {
         return bitmap;
@@ -52,4 +52,47 @@ public class Sprite {
             Log.e(TAG, "sprite.drawBitmap() failed.");
         }
     }
+}
+
+class Title extends Sprite {
+    private int score;
+    private int scoreX, scoreY;     //score的坐标, 决定score显示的位置
+    public Title(int screenWidth, int screenHeight, Context context) {
+        //interval = 16;
+        score = 0;
+        scoreX = 45;
+        scoreY = 70;
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
+        width = screenWidth;
+        height = (int) (screenWidth / 1080 * 148);
+        x = 0;      y = 0;
+        vx = 0;     vy = 0;
+        additionVy = 0;
+        g = 0;
+        //a = 0;
+        if(!setBitmap(context, R.drawable.title)) Log.e(TAG, "Unable to set title.bitmap.");
+    }
+
+    public void addScore(int deltaY) {
+        score += deltaY / 2;
+    }
+
+    public int getScore(){
+        return score;
+    }
+
+    @Override
+    public void drawBitmap(Canvas canvas, Paint paint) {
+        super.drawBitmap(canvas, paint);
+        try {
+            canvas.drawText(Integer.toString(score), scoreX, 70, paint);
+            //canvas.drawBitmap(bitmap, x, y, paint);
+        } catch (Exception e) {
+            Log.e(TAG, "sprite.drawText() failed.");
+        }
+    }
+
+
+
 }

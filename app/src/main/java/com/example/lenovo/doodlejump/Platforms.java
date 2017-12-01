@@ -14,12 +14,11 @@ import static android.content.ContentValues.TAG;
 
 public class Platforms {
     private int size;   //platform数组长度
-    private int num;    //platform中有效元素个数, 并不是所有元素都在屏幕内
+    private int num;    //platform中有效元素个数
     private Platform[] platform;
     private int screenWidth, screenHeight;
-    private int maxPlatInterval;
+    private int maxPlatInterval;    //相邻两个platform之间的最大间隔 单位: px
     private int head, rear;         //指向队头与队尾元素
-    //private int lowest, highest;    //指向屏幕内最低(具有最大y坐标)与最高(具有最小的非负y坐标)的platform
 
     public Platforms(int screenWidth, int screenHeight, int size, Context context) {
         this.size = size;
@@ -29,18 +28,15 @@ public class Platforms {
         this.screenHeight = screenHeight;
         maxPlatInterval = 450;     //每两个platform之间的间隔最多450px
         head = 0;   rear = 0;
-        //lowest = 0;
-        //highest = 0;
         for(int i = 0; i < num; i++) {
             platform[i] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(), context);
-            //if(platform[i].y > 0) highest = i;
             rear = i;
         }
     }
 
     private int randomX() {
-        return screenWidth / 2 - 138 / 2;
-        //return (int) (Math.random() * (screenWidth - 185));
+        //return screenWidth / 2 - 138 / 2;
+        return (int) (Math.random() * (screenWidth - 185));
     }
 
     private int randomY() {
@@ -82,16 +78,20 @@ public class Platforms {
             platform[j].drawBitmap(canvas, paint);
     }
 
-    public void refresh(Context context) {
-        //int i, j, y;
+    public void refresh(Context context, Title title) {
+        boolean flag = false;
+        int deltaY = 0;
         for(int i = 0, j = head; i < num; i++, j = (j+1) % size) {
-            //y = platform[j].y;
+            if(!flag) {
+                deltaY = (int) (platform[j].additionVy * platform[j].interval);
+                flag = true;
+            }
             if (!platform[j].refresh()) {
                 deleteHead();
                 newRear(context);
             }
-            //if(y < 0 && platform[j].y > 0) highest = j;
         }
+        title.addScore(deltaY);
     }
 
     private void deleteHead() {

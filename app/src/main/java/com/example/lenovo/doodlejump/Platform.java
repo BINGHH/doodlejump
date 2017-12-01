@@ -12,15 +12,14 @@ import static android.content.ContentValues.TAG;
 public class Platform extends Sprite {
     protected int type;
     public Platform(int screenWidth, int screenHeight, int x, int y, Context context){
-        interval = 16;
+        //interval = 16;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
         this.x = x;
         this.y = y;
         additionVy = 0;
-        g = 0;      a = 0;
-        width = 185;
-        height = 55;
+        g = 0;
+        //a = 0;
     }
 
     public boolean refresh(){
@@ -44,15 +43,25 @@ public class Platform extends Sprite {
                 && doodle.x < this.x + this.width )
             doodle.vy = -2.4;
     }
-
 }
 
 class normalPlat extends Platform {
     public normalPlat(int screenWidth, int screenHeight, int x, int y, Context context) {
         super(screenWidth, screenHeight, x, y, context);
         vx = 0;     vy = 0;
+        width = 194;     height = 52;
         type = PlatType.normal;
         if (!setBitmap(context, R.drawable.normalplat)) Log.e(TAG, "Unable to set Platform.bitmap.");
+    }
+}
+
+class brokenPlat extends Platform {
+    public brokenPlat(int screenWidth, int screenHeight, int x, int y, Context context){
+        super(screenWidth, screenHeight, x, y, context);
+        vx = 0;     vy = 0;
+        width = 204;    height = 52;
+        type = PlatType.broken;
+        if (!setBitmap(context, R.drawable.brokenplat)) Log.e(TAG, "Unable to set Platform.bitmap.");
     }
 }
 
