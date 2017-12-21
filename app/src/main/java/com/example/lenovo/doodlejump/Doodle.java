@@ -12,11 +12,12 @@ import static android.content.ContentValues.TAG;
 
 public class Doodle extends Sprite{
     private boolean still;      //true则代表doodle需要停留在屏幕中部 false代表不需要
+    private boolean gameOver;
     public Doodle(int screenWidth, int screenHeight, Context context){
         still = false;
-        //interval = 16;
-        //根据计算, 每次普通跳跃花费500ms的时间到达最高点, 跳跃高度为600像素.
-        //因此重力加速度g = 0.0048 px/ms² 初始速度为-2.4 px/ms
+        gameOver = false;
+        //根据计算, 每次普通跳跃花费630ms的时间到达最高点, 跳跃高度为600像素.
+        //因此重力加速度g = 0.00322 px/ms² 初始速度为-1.96 px/ms
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
         width = 138;
@@ -24,10 +25,9 @@ public class Doodle extends Sprite{
         x = (screenWidth - 138) / 2;
         y = screenHeight - 135;
         vx = 0;
-        vy = -2.4;
+        vy = -1.96;
         additionVy = 0;
-        g = 0.0048;
-        //a = 0;
+        g = 0.00322;
         if (!setBitmap(context, R.drawable.doodle)) Log.e(TAG, "Unable to set doodle.bitmap.");
     }
 
@@ -43,9 +43,10 @@ public class Doodle extends Sprite{
         if (y <= screenHeight / 2 && vy < 0) still = true;
         else still = false;
 
-        if (y > screenHeight - height) {
-            y = screenHeight - height;
-            vy = -2.4;
+        if (y > screenHeight) {
+            gameOver = true;
+            //y = screenHeight - height;
+            //vy = -1.9;
         }
     }
 
@@ -57,4 +58,9 @@ public class Doodle extends Sprite{
         vx = - 4.8 * Math.sin(roll / 180 * Math.PI);
         //Log.e(TAG, "vx = " + vx);
     }
+
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
 }

@@ -12,14 +12,12 @@ import static android.content.ContentValues.TAG;
 public class Platform extends Sprite {
     protected int type;
     public Platform(int screenWidth, int screenHeight, int x, int y, Context context){
-        //interval = 16;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
         this.x = x;
         this.y = y;
         additionVy = 0;
         g = 0;
-        //a = 0;
     }
 
     public boolean refresh(){
@@ -41,7 +39,7 @@ public class Platform extends Sprite {
                 && doodle.y + doodle.height > this.y
                 && doodle.x + doodle.width > this.x
                 && doodle.x < this.x + this.width )
-            doodle.vy = -2.4;
+            doodle.vy = -1.96;
     }
 }
 

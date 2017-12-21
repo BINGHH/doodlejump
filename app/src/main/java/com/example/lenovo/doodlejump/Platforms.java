@@ -41,10 +41,23 @@ public class Platforms {
 
     private int randomY() {
         int highestY;       //指的是最高platform的y坐标值(最高platform的y坐标值反而最小).
+        int i, j;
+        int deltaY;
         //如果所有platform都还没有初始化, 则最高platform的y坐标从screenHeight - 55算起
-        if(platform[head] == null) highestY = screenHeight - 55;
-        else highestY = platform[rear].y;
-        highestY -= (int) (Math.random() * maxPlatInterval + 100);
+        if(platform[head] == null) {
+            highestY = screenHeight - 55;
+            highestY -= (int) (Math.random() * maxPlatInterval + 100);
+        }
+        else {
+            for (i = rear; platform[i].type == PlatType.broken; i = (i - 1 + size) % size) ;
+            highestY = platform[i].y;
+            do {
+                deltaY = (int) (Math.random() * maxPlatInterval + 100);
+                if(i == rear) break;
+                if(Math.abs(highestY - deltaY - platform[rear].y) > platform[rear].height + 10) break;
+            } while (true);
+            highestY -= deltaY;
+        }
         return highestY;
     }
 
@@ -87,6 +100,7 @@ public class Platforms {
                 flag = true;
             }
             if (!platform[j].refresh()) {
+                // 当有一个platform掉出屏幕时, 就删去它并在在队尾生成一个新的platform
                 deleteHead();
                 newRear(context);
             }
@@ -105,7 +119,10 @@ public class Platforms {
     private void newRear(Context context) {
         if(num == size) Log.e(TAG, "wrong: try to add element to a full list.");
         int temp = (rear + 1) % size;
-        platform[temp] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(), context);
+        int rv = (int)(Math.random() * 1000);
+        if(rv > 300 || platform[head] == null || platform[rear].type == PlatType.broken)
+            platform[temp] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(), context);
+        else platform[temp] = new brokenPlat(screenWidth, screenHeight, randomX(), randomY(), context);
         rear = temp;
         num++;
     }

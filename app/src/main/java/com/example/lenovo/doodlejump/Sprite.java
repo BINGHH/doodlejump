@@ -58,7 +58,6 @@ class Title extends Sprite {
     private int score;
     private int scoreX, scoreY;     //score的坐标, 决定score显示的位置
     public Title(int screenWidth, int screenHeight, Context context) {
-        //interval = 16;
         score = 0;
         scoreX = 45;
         scoreY = 70;
@@ -92,7 +91,5 @@ class Title extends Sprite {
             Log.e(TAG, "sprite.drawText() failed.");
         }
     }
-
-
 
 }
