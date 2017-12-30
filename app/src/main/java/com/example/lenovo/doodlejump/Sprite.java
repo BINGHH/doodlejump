@@ -13,6 +13,7 @@ import static android.content.ContentValues.TAG;
 public class Sprite {
     protected int interval = 16;         //最小时间间隔 单位: ms
     protected Bitmap bitmap;
+    protected Bitmap secBitmap;
     protected int screenWidth, screenHeight;    //屏幕长宽
     protected int width, height;    //单位: px  该精灵的长宽.
     protected int x, y;                //单位: px
@@ -30,7 +31,7 @@ public class Sprite {
     public int getHeight(){ return height; }
 
     public boolean setBitmap(Context context, int src) {
-        //src为指定的图像, 示例取值为R.drawable.doodle, 如果成功则返回true, 否则返回false.
+        //src为指定的图像, 示例取值为R.drawable.ldoodle, 如果成功则返回true, 否则返回false.
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inMutable = true;
         options.inSampleSize = 2;
@@ -45,11 +46,37 @@ public class Sprite {
         else return true;
     }
 
-    public void drawBitmap(Canvas canvas, Paint paint) {
+    public boolean setSecBitmap(Context context, int src) {
+        //src为指定的图像, 示例取值为R.drawable.ldoodle, 如果成功则返回true, 否则返回false.
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inMutable = true;
+        options.inSampleSize = 2;
         try {
-            canvas.drawBitmap(bitmap, x, y, paint);
+            secBitmap = BitmapFactory.decodeResource(context.getResources(), src, options);
+            secBitmap = Bitmap.createScaledBitmap(secBitmap, width, height, false);
         } catch (Exception e) {
-            Log.e(TAG, "sprite.drawBitmap() failed.");
+            secBitmap = null;
+            return false;
+        }
+        if(secBitmap == null) return false;
+        else return true;
+    }
+
+    public void drawBitmap(Canvas canvas, Paint paint, int num) {
+        // num == 0: draw bitmap; num == 1: draw secBitmap
+        if(num == 0) {
+            try {
+                canvas.drawBitmap(bitmap, x, y, paint);
+            } catch (Exception e) {
+                Log.e(TAG, "sprite.drawBitmap() failed.");
+            }
+        }
+        else if(num == 1) {
+            try {
+                canvas.drawBitmap(secBitmap, x, y, paint);
+            } catch (Exception e) {
+                Log.e(TAG, "sprite.drawBitmap() failed.");
+            }
         }
     }
 }
@@ -82,8 +109,8 @@ class Title extends Sprite {
     }
 
     @Override
-    public void drawBitmap(Canvas canvas, Paint paint) {
-        super.drawBitmap(canvas, paint);
+    public void drawBitmap(Canvas canvas, Paint paint, int num) {
+        super.drawBitmap(canvas, paint, 0);
         try {
             canvas.drawText(Integer.toString(score), scoreX, 70, paint);
             //canvas.drawBitmap(bitmap, x, y, paint);

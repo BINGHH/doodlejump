@@ -2,6 +2,8 @@ package com.example.lenovo.doodlejump;
 
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.util.Log;
 
 import static android.content.ContentValues.TAG;
@@ -13,6 +15,7 @@ import static android.content.ContentValues.TAG;
 public class Doodle extends Sprite{
     private boolean still;      //true则代表doodle需要停留在屏幕中部 false代表不需要
     private boolean gameOver;
+    protected int direction;        //doodle的朝向. 1: 朝右; 0: 朝左
     public Doodle(int screenWidth, int screenHeight, Context context){
         still = false;
         gameOver = false;
@@ -24,11 +27,13 @@ public class Doodle extends Sprite{
         height = 135;
         x = (screenWidth - 138) / 2;
         y = screenHeight - 135;
+        direction = 0;      // 初始时doodle朝左
         vx = 0;
         vy = -1.96;
         additionVy = 0;
         g = 0.00322;
-        if (!setBitmap(context, R.drawable.doodle)) Log.e(TAG, "Unable to set doodle.bitmap.");
+        if (!setBitmap(context, R.drawable.ldoodle)) Log.e(TAG, "Unable to set ldoodle.bitmap.");
+        if (!setSecBitmap(context, R.drawable.rdoodle)) Log.e(TAG, "Unable to set ldoodle.secBitmap.");
     }
 
     public void refresh() {
@@ -56,11 +61,26 @@ public class Doodle extends Sprite{
 
     public void setVx(double roll) {
         vx = - 4.8 * Math.sin(roll / 180 * Math.PI);
+        if(direction == 0 && vx > 0) {
+            //从朝左变成朝右
+            direction = 1;
+            x = x + 46;
+        }
+        else if(direction == 1 && vx < 0) {
+            //从朝右变成朝左
+            direction = 0;
+            x = x - 46;
+        }
         //Log.e(TAG, "vx = " + vx);
     }
 
     public boolean isGameOver() {
         return gameOver;
+    }
+
+    public void drawBitmap(Canvas canvas, Paint paint) {
+        if(direction == 0) drawBitmap(canvas, paint, 0);
+        else drawBitmap(canvas, paint, 1);
     }
 
 }

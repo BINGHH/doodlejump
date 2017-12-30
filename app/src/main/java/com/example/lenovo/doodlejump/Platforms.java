@@ -29,7 +29,7 @@ public class Platforms {
         maxPlatInterval = 450;     //每两个platform之间的间隔最多450px
         head = 0;   rear = 0;
         for(int i = 0; i < num; i++) {
-            platform[i] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(), context);
+            platform[i] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.normal), context);
             rear = i;
         }
     }
@@ -39,24 +39,27 @@ public class Platforms {
         return (int) (Math.random() * (screenWidth - 185));
     }
 
-    private int randomY() {
+    private int randomY(int type) {
         int highestY;       //指的是最高platform的y坐标值(最高platform的y坐标值反而最小).
-        int i, j;
-        int deltaY;
         //如果所有platform都还没有初始化, 则最高platform的y坐标从screenHeight - 55算起
         if(platform[head] == null) {
             highestY = screenHeight - 55;
             highestY -= (int) (Math.random() * maxPlatInterval + 100);
         }
         else {
-            for (i = rear; platform[i].type == PlatType.broken; i = (i - 1 + size) % size) ;
-            highestY = platform[i].y;
+            highestY = platform[rear].y;
+            /*for (i = rear; platform[i].type == PlatType.broken; i = (i - 1 + size) % size) ;
             do {
                 deltaY = (int) (Math.random() * maxPlatInterval + 100);
                 if(i == rear) break;
                 if(Math.abs(highestY - deltaY - platform[rear].y) > platform[rear].height + 10) break;
             } while (true);
-            highestY -= deltaY;
+            highestY -= deltaY;*/
+            if(type == PlatType.broken)
+                highestY -= (int) ((Math.random() * 200 + 100));
+            else if(platform[rear].type == PlatType.broken)
+                highestY -= (int) ((Math.random() * 150 + 100));
+            else highestY -= (int) (Math.random() * maxPlatInterval + 100);
         }
         return highestY;
     }
@@ -88,7 +91,7 @@ public class Platforms {
 
     public void drawBitmap(Canvas canvas, Paint paint) {
         for(int i = 0, j = head; i < num; i++, j = (j+1) % size)
-            platform[j].drawBitmap(canvas, paint);
+            platform[j].drawBitmap(canvas, paint, 0);
     }
 
     public void refresh(Context context, Title title) {
@@ -101,6 +104,7 @@ public class Platforms {
             }
             if (!platform[j].refresh()) {
                 // 当有一个platform掉出屏幕时, 就删去它并在在队尾生成一个新的platform
+                Log.e(TAG, "num = " + num + " size = " + size);
                 deleteHead();
                 newRear(context);
             }
@@ -117,12 +121,16 @@ public class Platforms {
     }
 
     private void newRear(Context context) {
-        if(num == size) Log.e(TAG, "wrong: try to add element to a full list.");
+        if(num == size) {
+            Log.e(TAG, "wrong: try to add element to a full list.");
+            return;
+        }
         int temp = (rear + 1) % size;
         int rv = (int)(Math.random() * 1000);
-        if(rv > 300 || platform[head] == null || platform[rear].type == PlatType.broken)
-            platform[temp] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(), context);
-        else platform[temp] = new brokenPlat(screenWidth, screenHeight, randomX(), randomY(), context);
+        if(rv > 200 || platform[head] == null || platform[rear].type == PlatType.broken)
+            platform[temp] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.normal), context);
+        else if(rv > 100) platform[temp] = new springPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.withspring), context);
+        else platform[temp] = new brokenPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.broken), context);
         rear = temp;
         num++;
     }
@@ -138,10 +146,10 @@ public class Platforms {
                 platform[j].additionVy = 0;
     }
 
-    public void impactCheck(Doodle doodle) {
+    public void impactCheck(Doodle doodle, Context context) {
         if(doodle.vy > 0)
             //表示doodle正在下降
             for(int i = 0, j = head; i < num; i++, j = (j+1) % size)
-                platform[j].impactCheck(doodle);
+                platform[j].impactCheck(doodle, context);
     }
 }
