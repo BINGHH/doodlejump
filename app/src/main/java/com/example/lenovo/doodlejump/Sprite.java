@@ -11,18 +11,18 @@ import static android.content.ContentValues.TAG;
 
 
 public class Sprite {
-    protected int interval = 16;         //最小时间间隔 单位: ms
-    protected Bitmap bitmap;
-    protected Bitmap secBitmap;
-    protected int screenWidth, screenHeight;    //屏幕长宽
-    protected int width, height;    //单位: px  该精灵的长宽.
-    protected int x, y;                //单位: px
-    protected double vx, vy;           //单位: px/ms
-    protected double additionVy;       //除自己本身外的附加速度
-    protected double g;             //重力加速度, 向下为正, 单位px/ms²
+    int interval = 16;         //最小时间间隔 单位: ms
+    private Bitmap bitmap;
+    private Bitmap secBitmap;
+    int screenWidth, screenHeight;    //屏幕长宽
+    int width, height;    //单位: px  该精灵的长宽.
+    int x, y;                //单位: px
+    double vx, vy;           //单位: px/ms
+    double additionVy;       //除自己本身外的附加速度
+    double g;             //重力加速度, 向下为正, 单位px/ms²
     //protected double a;             //横向加速度, 向右为正, 单位px/ms²
 
-    public Bitmap getBitmap() {
+    Bitmap getBitmap() {
         return bitmap;
     }
 
@@ -30,7 +30,7 @@ public class Sprite {
 
     public int getHeight(){ return height; }
 
-    public boolean setBitmap(Context context, int src) {
+    boolean setBitmap(Context context, int src) {
         //src为指定的图像, 示例取值为R.drawable.ldoodle, 如果成功则返回true, 否则返回false.
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inMutable = true;
@@ -46,7 +46,7 @@ public class Sprite {
         else return true;
     }
 
-    public boolean setSecBitmap(Context context, int src) {
+    boolean setSecBitmap(Context context, int src) {
         //src为指定的图像, 示例取值为R.drawable.ldoodle, 如果成功则返回true, 否则返回false.
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inMutable = true;
@@ -84,7 +84,7 @@ public class Sprite {
 class Title extends Sprite {
     private int score;
     private int scoreX, scoreY;     //score的坐标, 决定score显示的位置
-    public Title(int screenWidth, int screenHeight, Context context) {
+    Title(int screenWidth, int screenHeight, Context context) {
         score = 0;
         scoreX = 45;
         scoreY = 70;
@@ -100,11 +100,11 @@ class Title extends Sprite {
         if(!setBitmap(context, R.drawable.title)) Log.e(TAG, "Unable to set title.bitmap.");
     }
 
-    public void addScore(int deltaY) {
+    void addScore(int deltaY) {
         score += deltaY / 2;
     }
 
-    public int getScore(){
+    int getScore(){
         return score;
     }
 

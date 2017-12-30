@@ -19,8 +19,9 @@ public class Platforms {
     private int screenWidth, screenHeight;
     private int maxPlatInterval;    //相邻两个platform之间的最大间隔 单位: px
     private int head, rear;         //指向队头与队尾元素
+    private int numWhitePlat;
 
-    public Platforms(int screenWidth, int screenHeight, int size, Context context) {
+    Platforms(int screenWidth, int screenHeight, int size, Context context) {
         this.size = size;
         this.num = size;
         platform = new Platform[size];
@@ -28,6 +29,7 @@ public class Platforms {
         this.screenHeight = screenHeight;
         maxPlatInterval = 450;     //每两个platform之间的间隔最多450px
         head = 0;   rear = 0;
+        numWhitePlat = 0;
         for(int i = 0; i < num; i++) {
             platform[i] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.normal), context);
             rear = i;
@@ -48,13 +50,6 @@ public class Platforms {
         }
         else {
             highestY = platform[rear].y;
-            /*for (i = rear; platform[i].type == PlatType.broken; i = (i - 1 + size) % size) ;
-            do {
-                deltaY = (int) (Math.random() * maxPlatInterval + 100);
-                if(i == rear) break;
-                if(Math.abs(highestY - deltaY - platform[rear].y) > platform[rear].height + 10) break;
-            } while (true);
-            highestY -= deltaY;*/
             if(type == PlatType.broken)
                 highestY -= (int) ((Math.random() * 200 + 100));
             else if(platform[rear].type == PlatType.broken)
@@ -89,14 +84,15 @@ public class Platforms {
         return platform[i].y;
     }
 
-    public void drawBitmap(Canvas canvas, Paint paint) {
+    void drawBitmap(Canvas canvas, Paint paint) {
         for(int i = 0, j = head; i < num; i++, j = (j+1) % size)
-            platform[j].drawBitmap(canvas, paint, 0);
+            if(platform[j].valid) platform[j].drawBitmap(canvas, paint, 0);
     }
 
-    public void refresh(Context context, Title title) {
+    void refresh(Context context, Title title) {
         boolean flag = false;
         int deltaY = 0;
+        int originHead = head;
         for(int i = 0, j = head; i < num; i++, j = (j+1) % size) {
             if(!flag) {
                 deltaY = (int) (platform[j].additionVy * platform[j].interval);
@@ -104,9 +100,10 @@ public class Platforms {
             }
             if (!platform[j].refresh()) {
                 // 当有一个platform掉出屏幕时, 就删去它并在在队尾生成一个新的platform
-                Log.e(TAG, "num = " + num + " size = " + size);
-                deleteHead();
-                newRear(context);
+                if(j == originHead) {
+                    deleteHead();
+                    newRear(context, title);
+                }
             }
         }
         title.addScore(deltaY);
@@ -120,17 +117,48 @@ public class Platforms {
         num--;
     }
 
-    private void newRear(Context context) {
+    private void newRear(Context context, Title title) {
         if(num == size) {
             Log.e(TAG, "wrong: try to add element to a full list.");
             return;
         }
         int temp = (rear + 1) % size;
         int rv = (int)(Math.random() * 1000);
-        if(rv > 200 || platform[head] == null || platform[rear].type == PlatType.broken)
+        if(platform[rear] == null)
             platform[temp] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.normal), context);
-        else if(rv > 100) platform[temp] = new springPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.withspring), context);
-        else platform[temp] = new brokenPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.broken), context);
+        else {
+            switch (platform[rear].type) {
+                case PlatType.broken:
+                    if(rv > 200) platform[temp] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.normal), context);
+                    else if(rv > 10) platform[temp] = new springPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.withspring), context);
+                    else  {
+                        platform[temp] = new whitePlat(screenWidth, screenHeight, randomX(), randomY(PlatType.onetouch), context);
+                        numWhitePlat++;
+                    }
+                    break;
+                case PlatType.onetouch:
+                    if(numWhitePlat < 5) {
+                        platform[temp] = new whitePlat(screenWidth, screenHeight, randomX(), randomY(PlatType.onetouch), context);
+                        numWhitePlat++;
+                    }
+                    else {
+                        platform[temp] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.normal), context);
+                        numWhitePlat = 0;
+                    }
+                    break;
+                default:
+                    if(rv > 300)
+                        platform[temp] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.normal), context);
+                    else if(rv > 200)
+                        platform[temp] = new brokenPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.broken), context);
+                    else if(rv > 10)
+                        platform[temp] = new springPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.withspring), context);
+                    else {
+                        platform[temp] = new whitePlat(screenWidth, screenHeight, randomX(), randomY(PlatType.onetouch), context);
+                        numWhitePlat++;
+                    }
+            }
+        }
         rear = temp;
         num++;
     }
