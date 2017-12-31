@@ -1,12 +1,14 @@
 package com.example.lenovo.doodlejump;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.util.Log;
 
 import java.util.Timer;
@@ -20,6 +22,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 
     private SensorManager sManager;
     private Sensor mSensorOrientation;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +73,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
+
 
 
 

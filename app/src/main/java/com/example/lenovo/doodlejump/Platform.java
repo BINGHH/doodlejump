@@ -25,7 +25,7 @@ public class Platform extends Sprite {
         valid = true;
     }
 
-    public boolean refresh(){
+    boolean refresh(){
         //如果platform掉出了屏幕外, 就返回false, 通知调用者进行处理
         //否则返回true, 表示不必进行处理
         double sumVy = vy + additionVy;
@@ -44,7 +44,7 @@ public class Platform extends Sprite {
         return true;
     }
 
-    public void impactCheck(Doodle doodle, Context context) {
+    void impactCheck(Doodle doodle, Context context) {
         //检测doodle是否碰撞到platform
         int footX1, footX2;
         if(doodle.direction == 0) {
@@ -95,11 +95,37 @@ public class Platform extends Sprite {
 }
 
 class normalPlat extends Platform {
-    public normalPlat(int screenWidth, int screenHeight, int x, int y, Context context) {
+    public normalPlat(int screenWidth, int screenHeight, int x, int y, int score, Context context) {
         super(screenWidth, screenHeight, x, y, context);
         int rv = (int)(Math.random() * 1000);
-        if(rv > 750) vx = 0.322;
-        else if(rv > 500) vx = -0.322;
+        int prop;
+        double tempVx;
+        if(score < 4000) {
+            prop = 900;
+            tempVx = 0.1;
+        }
+        else if(score < 8000) {
+            prop = 700;
+            tempVx = 0.15;
+        }
+        else if(score < 12000) {
+            prop = 500;
+            tempVx = 0.2;
+        }
+        else if(score < 16000) {
+            prop = 300;
+            tempVx = 0.3;
+        }
+        else if(score < 20000) {
+            prop = 100;
+            tempVx = 0.4;
+        }
+        else {
+            prop = 10;
+            tempVx = 0.5;
+        }
+        if(rv > prop + (1000 - prop) / 2) vx = tempVx;
+        else if(rv > prop) vx = -tempVx;
         else vx = 0;
         vy = 0;
         width = baseWidth;     height = baseHeight;
@@ -110,11 +136,18 @@ class normalPlat extends Platform {
 }
 
 class brokenPlat extends Platform {
-    public brokenPlat(int screenWidth, int screenHeight, int x, int y, Context context){
+    public brokenPlat(int screenWidth, int screenHeight, int x, int y, int score, Context context){
         super(screenWidth, screenHeight, x, y, context);
         int rv = (int)(Math.random() * 1000);
-        if(rv > 750) vx = 0.322;
-        else if(rv > 500) vx = -0.322;
+        double tempVx;
+        if(score < 4000) tempVx = 0.1;
+        else if(score < 8000) tempVx = 0.15;
+        else if(score < 12000) tempVx = 0.2;
+        else if(score < 16000) tempVx = 0.3;
+        else if(score < 20000) tempVx = 0.4;
+        else tempVx = 0.5;
+        if(rv > 750) vx = tempVx;
+        else if(rv > 500) vx = -tempVx;
         else vx = 0;
         vy = 0;
         width = baseWidth;    height = baseHeight;
@@ -124,11 +157,18 @@ class brokenPlat extends Platform {
 }
 
 class springPlat extends Platform {
-    public springPlat(int screenWidth, int screenHeight, int x, int y, Context context){
+    public springPlat(int screenWidth, int screenHeight, int x, int y, int score, Context context){
         super(screenWidth, screenHeight, x, y, context);
         int rv = (int)(Math.random() * 1000);
-        if(rv > 750) vx = 0.322;
-        else if(rv > 500) vx = -0.322;
+        double tempVx;
+        if(score < 4000) tempVx = 0.1;
+        else if(score < 8000) tempVx = 0.15;
+        else if(score < 12000) tempVx = 0.2;
+        else if(score < 16000) tempVx = 0.3;
+        else if(score < 20000) tempVx = 0.4;
+        else tempVx = 0.5;
+        if(rv > 750) vx = tempVx;
+        else if(rv > 500) vx = -tempVx;
         else vx = 0;
         vy = 0;
         width = baseWidth;    height = 81;

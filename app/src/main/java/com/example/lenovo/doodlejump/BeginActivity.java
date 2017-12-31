@@ -13,14 +13,11 @@ import android.widget.TextView;
 
 public class BeginActivity extends Activity {
     Button BegBtnStart;
-    TextView BegTxtHint;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.begin);
-
-        BegTxtHint = findViewById(R.id.BegTxtHint);
         BegBtnStart = findViewById(R.id.BegBtnStart);
         BegBtnStart.setOnClickListener(BegBtnStartClick);
     }
@@ -34,7 +31,7 @@ public class BeginActivity extends Activity {
                 startActivity(it);
                 finish();
             } catch (Exception e) {
-                BegTxtHint.setText("hehe");
+                e.printStackTrace();
             }
         }
     };

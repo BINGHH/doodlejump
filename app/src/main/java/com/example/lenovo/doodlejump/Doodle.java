@@ -48,11 +48,8 @@ public class Doodle extends Sprite{
         if (y <= screenHeight / 2 && vy < 0) still = true;
         else still = false;
 
-        if (y > screenHeight) {
+        if (y > screenHeight)
             gameOver = true;
-            //y = screenHeight - height;
-            //vy = -1.9;
-        }
     }
 
     public boolean isStill() {
@@ -74,6 +71,10 @@ public class Doodle extends Sprite{
         //Log.e(TAG, "vx = " + vx);
     }
 
+    public void yesGameOver() {
+        gameOver = true;
+    }
+
     public boolean isGameOver() {
         return gameOver;
     }
@@ -82,5 +83,7 @@ public class Doodle extends Sprite{
         if(direction == 0) drawBitmap(canvas, paint, 0);
         else drawBitmap(canvas, paint, 1);
     }
+
+
 
 }

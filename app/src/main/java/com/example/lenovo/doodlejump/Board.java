@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -36,7 +37,7 @@ public class Board extends View{
         screenWidth = getWidth();
         screenHeight = getHeight();
         doodle = new Doodle(screenWidth, screenHeight, getContext());
-        platforms = new Platforms(screenWidth, screenHeight, 10, getContext());
+        platforms = new Platforms(screenWidth, screenHeight, 20, getContext());
         title = new Title(screenWidth, screenHeight, getContext());
     }
 

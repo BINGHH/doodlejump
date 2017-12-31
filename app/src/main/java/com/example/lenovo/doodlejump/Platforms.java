@@ -15,47 +15,85 @@ import static android.content.ContentValues.TAG;
 public class Platforms {
     private int size;   //platform数组长度
     private int num;    //platform中有效元素个数
+    private int score;
     private Platform[] platform;
+    private Monster monster;
     private int screenWidth, screenHeight;
-    private int maxPlatInterval;    //相邻两个platform之间的最大间隔 单位: px
+    private int baseMaxInterval;    //相邻两个非broken platform之间的最大间隔 单位: px
+    private int baseMaxBrotInterval; //broken platform与上一个非broken platform之前的最大间隔 单位: px
     private int head, rear;         //指向队头与队尾元素
     private int numWhitePlat;
+    private int maxWhitePlat;
 
     Platforms(int screenWidth, int screenHeight, int size, Context context) {
         this.size = size;
         this.num = size;
+        score = 0;
         platform = new Platform[size];
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
-        maxPlatInterval = 450;     //每两个platform之间的间隔最多450px
+        baseMaxInterval = 450;      //每两个非broken platform之间的间隔最多450px
+        baseMaxBrotInterval = 200;   //一个broken platform与上一个非broken platform之间的间隔最多200px
         head = 0;   rear = 0;
         numWhitePlat = 0;
+        maxWhitePlat = 10;
         for(int i = 0; i < num; i++) {
-            platform[i] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.normal), context);
+            platform[i] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.normal, context), score, context);
             rear = i;
         }
+        monster = null;
     }
 
     private int randomX() {
-        //return screenWidth / 2 - 138 / 2;
         return (int) (Math.random() * (screenWidth - 185));
     }
 
-    private int randomY(int type) {
+    private int randomY(int type, Context context) {
         int highestY;       //指的是最高platform的y坐标值(最高platform的y坐标值反而最小).
+        int deltaY;
+        int maxInterval, maxBroInterval;
+        if(score < 3000) {
+            maxInterval = 100;
+            maxBroInterval = 0;
+        }
+        else if(score < 6000) {
+            maxInterval = 200;
+            maxBroInterval = 100;
+        }
+        else if(score < 9000) {
+            maxInterval = 300;
+            maxBroInterval = 100;
+        }
+        else if(score < 12000) {
+            maxInterval = 350;
+            maxBroInterval = 200;
+        }
+        else {
+            maxInterval = baseMaxInterval;
+            maxBroInterval = baseMaxBrotInterval;
+        }
         //如果所有platform都还没有初始化, 则最高platform的y坐标从screenHeight - 55算起
         if(platform[head] == null) {
             highestY = screenHeight - 55;
-            highestY -= (int) (Math.random() * maxPlatInterval + 100);
+            deltaY = (int) (Math.random() * maxInterval + 100);
         }
         else {
             highestY = platform[rear].y;
             if(type == PlatType.broken)
-                highestY -= (int) ((Math.random() * 200 + 100));
+                deltaY = (int) ((Math.random() * maxBroInterval + 100));
             else if(platform[rear].type == PlatType.broken)
-                highestY -= (int) ((Math.random() * 150 + 100));
-            else highestY -= (int) (Math.random() * maxPlatInterval + 100);
+                deltaY = (int) ((Math.random() * (maxInterval - maxBroInterval - 100) + 100));
+            else deltaY = (int) (Math.random() * maxInterval + 100);
         }
+        if(deltaY >= 170 + 100) {
+            //Log.e(TAG, "A Monster is about to be created.");
+            int rv = (int) (Math.random() * 1000);
+            if(rv < 500 && monster == null) {
+                monster = new Monster(screenWidth, screenHeight, highestY, context);
+                Log.e(TAG, "A Monster has already been created.");
+            }
+        }
+        highestY -= deltaY;
         return highestY;
     }
 
@@ -87,6 +125,7 @@ public class Platforms {
     void drawBitmap(Canvas canvas, Paint paint) {
         for(int i = 0, j = head; i < num; i++, j = (j+1) % size)
             if(platform[j].valid) platform[j].drawBitmap(canvas, paint, 0);
+        if(monster != null) monster.drawBitmap(canvas, paint, 0);
     }
 
     void refresh(Context context, Title title) {
@@ -106,6 +145,8 @@ public class Platforms {
                 }
             }
         }
+        if(monster != null)
+            if(!monster.refresh()) monster = null;
         title.addScore(deltaY);
     }
 
@@ -122,39 +163,40 @@ public class Platforms {
             Log.e(TAG, "wrong: try to add element to a full list.");
             return;
         }
+        score = title.getScore();
         int temp = (rear + 1) % size;
         int rv = (int)(Math.random() * 1000);
         if(platform[rear] == null)
-            platform[temp] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.normal), context);
+            platform[temp] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.normal, context), score, context);
         else {
             switch (platform[rear].type) {
                 case PlatType.broken:
-                    if(rv > 200) platform[temp] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.normal), context);
-                    else if(rv > 10) platform[temp] = new springPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.withspring), context);
+                    if(rv > 200) platform[temp] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.normal, context), score, context);
+                    else if(rv > 10) platform[temp] = new springPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.withspring, context), score, context);
                     else  {
-                        platform[temp] = new whitePlat(screenWidth, screenHeight, randomX(), randomY(PlatType.onetouch), context);
+                        platform[temp] = new whitePlat(screenWidth, screenHeight, randomX(), randomY(PlatType.onetouch, context), context);
                         numWhitePlat++;
                     }
                     break;
                 case PlatType.onetouch:
-                    if(numWhitePlat < 5) {
-                        platform[temp] = new whitePlat(screenWidth, screenHeight, randomX(), randomY(PlatType.onetouch), context);
+                    if(numWhitePlat < maxWhitePlat) {
+                        platform[temp] = new whitePlat(screenWidth, screenHeight, randomX(), randomY(PlatType.onetouch, context), context);
                         numWhitePlat++;
                     }
                     else {
-                        platform[temp] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.normal), context);
+                        platform[temp] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.normal, context), score, context);
                         numWhitePlat = 0;
                     }
                     break;
                 default:
                     if(rv > 300)
-                        platform[temp] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.normal), context);
+                        platform[temp] = new normalPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.normal, context), score, context);
                     else if(rv > 200)
-                        platform[temp] = new brokenPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.broken), context);
+                        platform[temp] = new brokenPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.broken, context), score, context);
                     else if(rv > 10)
-                        platform[temp] = new springPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.withspring), context);
+                        platform[temp] = new springPlat(screenWidth, screenHeight, randomX(), randomY(PlatType.withspring,context), score, context);
                     else {
-                        platform[temp] = new whitePlat(screenWidth, screenHeight, randomX(), randomY(PlatType.onetouch), context);
+                        platform[temp] = new whitePlat(screenWidth, screenHeight, randomX(), randomY(PlatType.onetouch, context), context);
                         numWhitePlat++;
                     }
             }
@@ -165,13 +207,19 @@ public class Platforms {
 
     public void inform(boolean still, double doodleVy) {
         //告诉platforms, doodle是否处于静止状态
-        if(still)
+        if(still) {
             //如果doodle处于静止状态, 则为所有的platform添上一个附加的速度
-            for(int i = 0, j = head; i < num; i++, j = (j+1) % size)
+            for (int i = 0, j = head; i < num; i++, j = (j + 1) % size)
                 platform[j].additionVy = -doodleVy;
-        else
-            for(int i = 0, j = head; i < num; i++, j = (j+1) % size)
+            if(monster != null)
+                monster.additionVy = -doodleVy;
+        }
+        else {
+            for (int i = 0, j = head; i < num; i++, j = (j + 1) % size)
                 platform[j].additionVy = 0;
+            if(monster != null)
+                monster.additionVy = 0;
+        }
     }
 
     public void impactCheck(Doodle doodle, Context context) {
@@ -179,5 +227,6 @@ public class Platforms {
             //表示doodle正在下降
             for(int i = 0, j = head; i < num; i++, j = (j+1) % size)
                 platform[j].impactCheck(doodle, context);
+        if(monster != null) monster.impactCheck(doodle, context);
     }
 }

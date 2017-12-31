@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.util.Log;
 
 import static android.content.ContentValues.TAG;
@@ -12,8 +13,8 @@ import static android.content.ContentValues.TAG;
 
 public class Sprite {
     int interval = 16;         //最小时间间隔 单位: ms
-    private Bitmap bitmap;
-    private Bitmap secBitmap;
+    private Bitmap bitmap = null;
+    private Bitmap secBitmap = null;
     int screenWidth, screenHeight;    //屏幕长宽
     int width, height;    //单位: px  该精灵的长宽.
     int x, y;                //单位: px
@@ -119,4 +120,102 @@ class Title extends Sprite {
         }
     }
 
+}
+
+class Monster extends Sprite {
+    private int localX;
+    private int localY;
+    private double localVx, localVy, maxLocalVx, maxLocalVy;
+    Monster(int screenWidth, int screenHeight, int baseY, Context context) {
+        localX = 0;
+        localY = 0;
+        maxLocalVx = 0.3;
+        maxLocalVy = 0.3;
+        localVx = maxLocalVx;
+        localVy = maxLocalVy;
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
+        vx = 0;
+        vy = 0;
+        additionVy = 0;
+        g = 0;
+        int rv = (int)(Math.random() * 1000);
+        int drawable;
+        if(rv > 700) {
+            drawable = R.drawable.monster1;
+            width = 187;
+            height = 166;
+        }
+        else if(rv > 300) {
+            drawable = R.drawable.monster2;
+            width = 262;
+            height = 158;
+        }
+        else {
+            drawable = R.drawable.monster3;
+            width = 157;
+            height = 120;
+        }
+        this.x = (int) (Math.random() * (screenWidth - width - 50) + 50);
+        this.y = baseY - height - 10;
+        if(!setBitmap(context, drawable)) Log.e(TAG, "Unable to set Monster.bitmap");
+    }
+
+    boolean refresh() {
+        //如果platform掉出了屏幕外, 就返回false, 通知调用者进行处理
+        //否则返回true, 表示不必进行处理
+
+        localY += (int) (localVy * interval);
+        if(localY > 30) localVy = -maxLocalVy;
+        else if(localY < -30) localVy = maxLocalVy;
+
+        double sumVy = vy + localVy + additionVy;
+        int tempY = y + (int) (sumVy * interval);
+        if(tempY > screenHeight) return false;
+        y = tempY;
+
+        localX += (int) (localVx * interval);
+        if(localX > 30) localVx = -maxLocalVx;
+        else if(localX < -30) localVx = maxLocalVx;
+
+        double sumVx = vx + localVx;
+        int tempX = x + (int)(sumVx * interval);
+        if(tempX >= screenWidth - this.width || tempX <= 0)
+            vx = -vx;
+        else x = tempX;
+        return true;
+    }
+
+    void impactCheck(Doodle doodle, Context context) {
+        //检测doodle是否碰撞到monster
+        int footX1, footX2;
+        if (doodle.direction == 0) {
+            //朝左
+            footX1 = doodle.x + 46;
+            footX2 = doodle.x + doodle.width - 11;
+        } else {
+            footX1 = doodle.x + 11;
+            footX2 = doodle.x + doodle.width - 46;
+        }
+
+        if (doodle.vy > 0) {
+            //此时doodle正在下降 如果踩到monster, 就获得类似弹簧的加速效果
+            //判断doodle有没有踩到monster上
+            if (doodle.y + doodle.height < this.y + this.height
+                    && doodle.y + doodle.height > this.y
+                    && footX1 < this.x + this.width
+                    && footX2 > this.x) {
+                //注意: x方向上判断的是doodle的脚的左右坐标
+                doodle.vy = -3;
+                vy = 1.7;
+            }
+        } else if (doodle.vy <= 0) {
+            //此时doodle正在上升 如果撞到monster, 游戏结束
+            if (doodle.y < this.y + this.height
+                    && doodle.y + doodle.height > this.y
+                    && doodle.x < this.x + this.width
+                    && doodle.x + doodle.width > this.x)
+                doodle.yesGameOver();
+        }
+    }
 }
