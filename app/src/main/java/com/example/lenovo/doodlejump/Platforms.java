@@ -33,7 +33,7 @@ public class Platforms {
         platform = new Platform[size];
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
-        baseMaxInterval = 450;      //每两个非broken platform之间的间隔最多450px
+        baseMaxInterval = 400;      //每两个非broken platform之间的间隔最多450px
         baseMaxBrotInterval = 200;   //一个broken platform与上一个非broken platform之间的间隔最多200px
         head = 0;   rear = 0;
         numWhitePlat = 0;

@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 
 /**
@@ -56,6 +57,16 @@ public class Board extends View{
         platforms.inform(doodle.isStill(), doodle.vy);  //告知platforms是否需要向下移动
         platforms.impactCheck(doodle, getContext());              //碰撞检测
         //canvas.drawText(Integer.toString(count), 500, 600, paint);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                if(!doodle.isEquipRocket()) doodle.wearCloak(getContext());
+                break;
+        }
+        return true;
     }
 
     public void setDoodleVx(double roll){

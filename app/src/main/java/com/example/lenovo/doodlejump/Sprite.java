@@ -210,7 +210,8 @@ class Monster extends Sprite {
             }
         } else if (doodle.vy <= 0) {
             //此时doodle正在上升 如果撞到monster, 游戏结束
-            if (doodle.y < this.y + this.height
+            if (!doodle.isWearingCloak()
+                    &&doodle.y < this.y + this.height
                     && doodle.y + doodle.height > this.y
                     && doodle.x < this.x + this.width
                     && doodle.x + doodle.width > this.x
