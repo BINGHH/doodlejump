@@ -10,6 +10,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.util.Log;
+import android.view.WindowManager;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -33,6 +34,8 @@ public class MainActivity extends Activity implements SensorEventListener {
         mSensorOrientation = sManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
         sManager.registerListener(this, mSensorOrientation, SensorManager.SENSOR_DELAY_UI);
 
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        
         BView = findViewById(R.id.BView);
 
         Timer timer = new Timer();

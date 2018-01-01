@@ -17,6 +17,7 @@ public class Platforms {
     private int num;    //platform中有效元素个数
     private int score;
     private Platform[] platform;
+    private Rocket rocket;
     private Monster monster;
     private int screenWidth, screenHeight;
     private int baseMaxInterval;    //相邻两个非broken platform之间的最大间隔 单位: px
@@ -42,6 +43,7 @@ public class Platforms {
             rear = i;
         }
         monster = null;
+        rocket = null;
     }
 
     private int randomX() {
@@ -88,9 +90,15 @@ public class Platforms {
         if(deltaY >= 170 + 100) {
             //Log.e(TAG, "A Monster is about to be created.");
             int rv = (int) (Math.random() * 1000);
-            if(rv < 500 && monster == null) {
-                monster = new Monster(screenWidth, screenHeight, highestY, context);
-                Log.e(TAG, "A Monster has already been created.");
+            if(rv < 500) {
+                if(monster == null) {
+                    monster = new Monster(screenWidth, screenHeight, highestY, context);
+                    //Log.e(TAG, "A Monster has already been created.");
+                }
+            }
+            else if(platform[rear].type == PlatType.normal && rocket == null) {
+                rocket = new Rocket(screenWidth, screenHeight, platform[rear], rear, context);
+                //Log.e(TAG, "A Rocket has already been created. Plattype = " + platform[rear].type);
             }
         }
         highestY -= deltaY;
@@ -126,9 +134,13 @@ public class Platforms {
         for(int i = 0, j = head; i < num; i++, j = (j+1) % size)
             if(platform[j].valid) platform[j].drawBitmap(canvas, paint, 0);
         if(monster != null) monster.drawBitmap(canvas, paint, 0);
+        if(rocket != null) {
+            rocket.drawBitmap(canvas, paint);
+            //Log.e(TAG, "Rocket x = " + rocket.x + "Rocket y = " + rocket.y);
+        }
     }
 
-    void refresh(Context context, Title title) {
+    void refresh(Context context, Title title, Doodle doodle) {
         boolean flag = false;
         int deltaY = 0;
         int originHead = head;
@@ -140,6 +152,9 @@ public class Platforms {
             if (!platform[j].refresh()) {
                 // 当有一个platform掉出屏幕时, 就删去它并在在队尾生成一个新的platform
                 if(j == originHead) {
+                    if(rocket != null && j == rocket.getNumPlat())
+                        //rocket依附的plat已经掉出屏幕外
+                        rocket.platInvalidate();
                     deleteHead();
                     newRear(context, title);
                 }
@@ -147,6 +162,8 @@ public class Platforms {
         }
         if(monster != null)
             if(!monster.refresh()) monster = null;
+        if(rocket != null)
+            if(!rocket.refresh(platform, doodle)) rocket = null;
         title.addScore(deltaY);
     }
 
@@ -213,12 +230,16 @@ public class Platforms {
                 platform[j].additionVy = -doodleVy;
             if(monster != null)
                 monster.additionVy = -doodleVy;
+            if(rocket != null)
+                rocket.additionVy = -doodleVy;
         }
         else {
             for (int i = 0, j = head; i < num; i++, j = (j + 1) % size)
                 platform[j].additionVy = 0;
             if(monster != null)
                 monster.additionVy = 0;
+            if(rocket != null)
+                rocket.additionVy = 0;
         }
     }
 
@@ -228,5 +249,6 @@ public class Platforms {
             for(int i = 0, j = head; i < num; i++, j = (j+1) % size)
                 platform[j].impactCheck(doodle, context);
         if(monster != null) monster.impactCheck(doodle, context);
+        if(rocket != null) rocket.impactCheck(doodle, context);
     }
 }

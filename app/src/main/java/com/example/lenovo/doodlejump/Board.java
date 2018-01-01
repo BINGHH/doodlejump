@@ -49,9 +49,9 @@ public class Board extends View{
         }
         count ++;
         platforms.drawBitmap(canvas, paint);        //画出所有的platform
-        platforms.refresh(getContext(), title);     //更新所有platform的坐标并更新分数
+        platforms.refresh(getContext(), title, doodle);     //更新所有platform的坐标并更新分数
         doodle.drawBitmap(canvas, paint);           //画出doodle
-        doodle.refresh();                           //更新doodle坐标
+        doodle.refresh(getContext());                           //更新doodle坐标
         title.drawBitmap(canvas, paint, 0);            //画出标题栏以及标题栏左侧分数
         platforms.inform(doodle.isStill(), doodle.vy);  //告知platforms是否需要向下移动
         platforms.impactCheck(doodle, getContext());              //碰撞检测

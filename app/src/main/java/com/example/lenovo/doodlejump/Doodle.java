@@ -13,12 +13,16 @@ import static android.content.ContentValues.TAG;
  */
 
 public class Doodle extends Sprite{
-    private boolean still;      //true则代表doodle需要停留在屏幕中部 false代表不需要
+    private boolean still;              //true则代表doodle需要停留在屏幕中部 false代表不需要
     private boolean gameOver;
-    protected int direction;        //doodle的朝向. 1: 朝右; 0: 朝左
-    public Doodle(int screenWidth, int screenHeight, Context context){
+    private boolean isEquipRocket;
+    private int rocketLastTime;
+    protected int direction;             //doodle的朝向. 1: 朝右; 0: 朝左
+    Doodle(int screenWidth, int screenHeight, Context context){
         still = false;
         gameOver = false;
+        isEquipRocket = false;
+        rocketLastTime = 0;
         //根据计算, 每次普通跳跃花费630ms的时间到达最高点, 跳跃高度为600像素.
         //因此重力加速度g = 0.00322 px/ms² 初始速度为-1.96 px/ms
         this.screenWidth = screenWidth;
@@ -32,14 +36,28 @@ public class Doodle extends Sprite{
         vy = -1.96;
         additionVy = 0;
         g = 0.00322;
-        if (!setBitmap(context, R.drawable.ldoodle)) Log.e(TAG, "Unable to set ldoodle.bitmap.");
-        if (!setSecBitmap(context, R.drawable.rdoodle)) Log.e(TAG, "Unable to set ldoodle.secBitmap.");
+        if (!setBitmap(context, R.drawable.ldoodle)) Log.e(TAG, "Unable to set doodle.bitmap.");
+        if (!setSecBitmap(context, R.drawable.rdoodle)) Log.e(TAG, "Unable to set doodle.secBitmap.");
     }
 
-    public void refresh() {
+    public void refresh(Context context) {
         //我们假定每个interval刷新一次
+        if(isEquipRocket) {
+            vy = -6;
+            g = 0;
+            rocketLastTime--;
+            if(rocketLastTime <= 0) {
+                isEquipRocket = false;
+                g = 0.00322;
+                vy = -1.96;
+                width = 138;
+                height = 135;
+                if (!setBitmap(context, R.drawable.ldoodle)) Log.e(TAG, "Unable to set doodle.bitmap.");
+                if (!setSecBitmap(context, R.drawable.rdoodle)) Log.e(TAG, "Unable to set doodle.secBitmap.");
+            }
+        }
+
         x += (int) (vx * interval);
-        //if (vx < 2.4 && vx > -2.4) vx += a * interval;              //横向速度有最大速度限制
         if (x < -width / 2) x = screenWidth - width / 2 - 1;        //从屏幕左边出去能从屏幕右边回来
         else if (x > screenWidth - width / 2) x = -width / 2 + 1;   //从屏幕右边出去能从屏幕左边回来
 
@@ -71,12 +89,28 @@ public class Doodle extends Sprite{
         //Log.e(TAG, "vx = " + vx);
     }
 
+    public void setRocketLastTime(int lastTime) {
+        rocketLastTime = lastTime;
+    }
+
+    public void yesRocketOn(Context context) {
+        isEquipRocket = true;
+        width = 222;
+        height = 212;
+        if (!setBitmap(context, R.drawable.lwithrocket)) Log.e(TAG, "Unable to set doodle.bitmap.");
+        if (!setSecBitmap(context, R.drawable.rwithrocket)) Log.e(TAG, "Unable to set doodle.secBitmap.");
+    }
+
     public void yesGameOver() {
         gameOver = true;
     }
 
     public boolean isGameOver() {
         return gameOver;
+    }
+
+    public boolean isEquipRocket() {
+        return isEquipRocket;
     }
 
     public void drawBitmap(Canvas canvas, Paint paint) {

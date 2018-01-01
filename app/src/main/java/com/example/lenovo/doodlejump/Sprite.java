@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.util.Log;
 
 import static android.content.ContentValues.TAG;
@@ -214,8 +213,142 @@ class Monster extends Sprite {
             if (doodle.y < this.y + this.height
                     && doodle.y + doodle.height > this.y
                     && doodle.x < this.x + this.width
-                    && doodle.x + doodle.width > this.x)
+                    && doodle.x + doodle.width > this.x
+                    && !doodle.isEquipRocket())
                 doodle.yesGameOver();
         }
     }
+}
+
+class Rocket extends Sprite {
+    /*  isEquipped == 0 && isTimeOut == 0: 还未被装备
+        isEquipped == 1 && isTimeOut == 0: 已经装备上并且火箭还在工作
+        isEquipped == 0 && isTimeOut == 1: 火箭推进时间已到, 开始脱落
+     */
+    private boolean isEquipped;
+    private boolean isTimeOut;
+    private int maxLastTime;
+    private int lastTime;
+    private int numPlat;
+    Rocket(int screenWidth, int screenHeight, Platform plat, int numPlat, Context context) {
+        isEquipped = false;
+        isTimeOut = false;
+        maxLastTime = 160;
+        lastTime = 0;
+        this.numPlat = numPlat;
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
+        width = 82;     height = 124;
+        x = plat.x + plat.width / 2 - width / 2;
+        y = plat.y - height;
+        vx = plat.vx;       vy = plat.vy;
+        additionVy = plat.additionVy;
+        g = plat.g;
+        //Log.e(TAG, "A Rocket is creating. Plattype = " + plat.type);
+        if(!setBitmap(context, R.drawable.rocket)) Log.e(TAG, "Unable to set Rocket.bitmap");
+        if(!setSecBitmap(context, R.drawable.halfrocket)) Log.e(TAG, "Unable to set Rocket.secBitmap");
+    }
+
+    boolean refresh(Platform [] plat, Doodle doodle) {
+        //如果rocket掉出了屏幕外, 就返回false, 通知调用者进行处理
+        //否则返回true, 表示不必进行处理
+        if(!isEquipped && !isTimeOut) {
+            if(numPlat >= 0) {
+                //说明依附的plat还未掉出屏幕外
+                //Log.e(TAG, "Rocket refreshing: plattype = " + plat[numPlat].type + " num = " + numPlat);
+                x = plat[numPlat].x + plat[numPlat].width / 2 - width / 2;
+                y = plat[numPlat].y - height;
+            }
+            else {
+                //依附的plat已经掉出屏幕外
+                vy = 1;
+                double sumVy = vy + additionVy;
+                y = y + (int) (sumVy * interval);
+                if(y > screenHeight)
+                    return false;
+            }
+            return true;
+        }
+        else if(isEquipped && !isTimeOut) {
+            /*  这里火箭的x, y坐标随便设什么都行.
+                因为此时火箭正在飞行, 火箭的图片包含在doodle.bitmap中,
+                此时Rocket.bitmap实际上并不显示.
+            */
+            lastTime--;
+            if(lastTime <= 2) {
+                lastTime = 0;
+                isEquipped = false;
+                isTimeOut = true;
+                if(doodle.direction == 0) {
+                    //朝左
+                    x = doodle.x + 149;
+                    y = doodle.y + 5;
+                    vx = 1;
+                    vy = 0;
+                    g = 0.00322;
+                }
+                else {
+                    //朝右
+                    x = doodle.x + doodle.width - 149;
+                    y = doodle.y + 5;
+                    vx = -1;
+                    vy = 0;
+                    g = 0.00322;
+                }
+            }
+            return true;
+        }
+        else if(!isEquipped) {
+            x += (int) (vx * interval);
+            if(x < -width / 2) return false;
+            else if(x > screenWidth - width / 2) return  false;
+
+            double sumVy = vy + additionVy;
+            y = y + (int) (sumVy * interval);
+            vy = vy + g * interval;
+            if(y > screenHeight)
+                return false;
+        }
+        else {
+            Log.e(TAG, "Unexpected branch.");
+            return false;
+        }
+        return  true;
+    }
+
+    void drawBitmap(Canvas canvas, Paint paint) {
+        if(!isEquipped && !isTimeOut)
+            drawBitmap(canvas, paint, 0);
+        else if(!isEquipped)
+            drawBitmap(canvas, paint, 1);
+    }
+
+    void impactCheck(Doodle doodle, Context context) {
+        //检测doodle是否捡到rocket
+        if(!isEquipped && !isTimeOut) {
+            //只有当rocket还在plat上时才能被捡起
+            if (doodle.y < this.y + this.height
+                    && doodle.y + doodle.height > this.y
+                    && doodle.x < this.x + this.width
+                    && doodle.x + doodle.width > this.x) {
+                this.isEquipped = true;
+                this.isTimeOut = false;
+                this.numPlat = -1;
+                this.lastTime = maxLastTime;
+                doodle.setRocketLastTime(maxLastTime);
+                doodle.yesRocketOn(context);
+            }
+        }
+    }
+
+    int getNumPlat() {
+        return numPlat;
+    }
+
+    void platInvalidate() {
+        //表明附着的plat已经掉出屏幕外
+        if(!isEquipped && !isTimeOut)
+            numPlat = -1;
+    }
+
 }
