@@ -7,6 +7,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.io.FileOutputStream;
+
 /**
  * Created by lenovo on 2017/12/21.
  */
@@ -20,6 +22,14 @@ public class BeginActivity extends Activity {
         setContentView(R.layout.begin);
         BegBtnStart = findViewById(R.id.BegBtnStart);
         BegBtnStart.setOnClickListener(BegBtnStartClick);
+
+        try {
+            FileOutputStream fOut = openFileOutput("DATA", MODE_APPEND);
+            fOut.close();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     private Button.OnClickListener BegBtnStartClick = new Button.OnClickListener() {

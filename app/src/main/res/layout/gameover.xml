@@ -41,7 +41,7 @@
         app:layout_constraintVertical_bias="0.05" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/TxtHScore"
         android:layout_width="105dp"
         android:layout_height="58dp"
         android:layout_marginBottom="8dp"
@@ -64,7 +64,7 @@
         app:layout_constraintVertical_bias="0.339" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/TxtScore"
         android:layout_width="107dp"
         android:layout_height="52dp"
         android:layout_marginEnd="8dp"
